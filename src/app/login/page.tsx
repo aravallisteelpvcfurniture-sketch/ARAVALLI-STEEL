@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -64,17 +64,18 @@ export default function LoginPage() {
     },
   });
 
-  if (isUserLoading) {
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/');
+    }
+  }, [user, isUserLoading, router]);
+
+  if (isUserLoading || user) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader className="animate-spin" />
       </div>
     );
-  }
-  
-  if (user) {
-    router.push('/');
-    return null;
   }
 
   const onSubmit = async (values: FormValues) => {
