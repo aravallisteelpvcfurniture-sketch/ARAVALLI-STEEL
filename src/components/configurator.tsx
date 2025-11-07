@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import ArViewModal from './ar-view-modal';
 import { useFirestore, useUser, addDocumentNonBlocking } from '@/firebase';
 import { collection } from 'firebase/firestore';
-import BottomNavbar from './bottom-navbar';
+
 
 export type FurnitureType = 'chair' | 'table' | 'cabinet' | 'shelf';
 
