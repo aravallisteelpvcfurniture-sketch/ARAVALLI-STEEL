@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/categories', label: 'Category', icon: LayoutGrid },
+  { href: '/scanner', label: 'Scanner', icon: Plus },
   { href: '/account', label: 'Account', icon: UserIcon },
   { href: '/more', label: 'More', icon: MoreHorizontal },
 ];
@@ -28,7 +29,7 @@ const BottomNavbar = () => {
   const { data: userData } = useDoc(userDocRef);
 
   const getInitials = (name: string | null | undefined) => {
-    if (!name) return <UserIcon className="h-6 w-6" />;
+    if (!name) return <UserIcon className="h-5 w-5" />;
     const names = name.split(' ');
     if (names.length > 1) {
       return `${names[0][0]}${names[names.length - 1][0]}`;
@@ -39,7 +40,7 @@ const BottomNavbar = () => {
   const AccountIcon = () => {
     if (user) {
       return (
-        <Avatar className="h-6 w-6">
+        <Avatar className="h-5 w-5">
           <AvatarImage src={user.photoURL ?? ''} alt={userData?.profileName ?? 'User'} />
           <AvatarFallback className="text-xs bg-muted-foreground/20">
             {getInitials(userData?.profileName ?? user.email)}
@@ -47,59 +48,36 @@ const BottomNavbar = () => {
         </Avatar>
       );
     }
-    return <UserIcon className="h-6 w-6" />;
+    return <UserIcon className="h-5 w-5" />;
   };
 
   const NavItem = ({ href, label, icon: Icon }: { href: string, label: string, icon: React.ElementType }) => {
     const isActive = pathname === href;
+    const isScanner = label === 'Scanner';
     return (
       <Link 
           href={href}
           className={cn(
-              'flex flex-col items-center justify-center text-muted-foreground w-full h-16 transition-colors duration-200',
-              isActive ? 'text-primary' : 'hover:text-primary/80'
+              'relative flex items-center justify-center gap-2 h-12 px-3 transition-colors duration-200 text-sm font-medium',
+              isActive 
+                ? 'bg-primary text-primary-foreground rounded-t-lg' 
+                : 'bg-muted/60 text-muted-foreground hover:bg-muted rounded-t-lg',
+              isScanner && 'hidden' // Hide scanner from the main row
           )}
       >
-          {label === 'Account' ? <AccountIcon /> : <Icon className="h-6 w-6" />}
-          <span className="text-xs mt-1 sr-only">{label}</span>
+          {label === 'Account' ? <AccountIcon /> : <Icon className="h-5 w-5" />}
+          <span>{label}</span>
       </Link>
     );
   }
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-24 px-4 pointer-events-none">
-        <div className="relative h-full w-full">
-            
-            <Link href="/scanner" className="pointer-events-auto">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 size-16 bg-primary rounded-full flex items-center justify-center text-primary-foreground shadow-lg hover:bg-primary/90 transition-transform duration-300 ease-in-out hover:scale-110">
-                    <Plus className="h-8 w-8" />
-                </div>
-            </Link>
-
-            <nav 
-                className="absolute bottom-4 left-0 right-0 h-16 bg-background rounded-2xl shadow-t-strong overflow-hidden pointer-events-auto"
-                style={{
-                    boxShadow: '0 -4px 12px -1px rgba(0, 0, 0, 0.08)'
-                }}
-            >
-                <div className="flex justify-around items-center h-full">
-                    <NavItem {...navItems[0]} />
-                    <NavItem {...navItems[1]} />
-                    <div className="w-full" /> {/* Spacer for the center button */}
-                    <NavItem {...navItems[2]} />
-                    <NavItem {...navItems[3]} />
-                </div>
-
-                {/* SVG for the notch */}
-                <div 
-                    className="absolute top-0 left-1/2 -translate-x-1/2 w-[100px] h-[40px] pointer-events-none"
-                >
-                    <svg width="100" height="40" viewBox="0 0 100 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M0 40V14C0 6.26801 6.26801 0 14 0H86C93.732 0 100 6.26801 100 14V40H0Z" fill="hsl(var(--background))"/>
-                    </svg>
-                </div>
-            </nav>
-        </div>
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-16 bg-background shadow-t-strong">
+      <div className="flex justify-around items-end h-full">
+        {navItems.map((item) => (
+          <NavItem key={item.href} {...item} />
+        ))}
+      </div>
     </div>
   );
 };

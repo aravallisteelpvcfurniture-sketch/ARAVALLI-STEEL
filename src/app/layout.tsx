@@ -25,7 +25,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
-          <div className="pb-32 md:pb-0">
+          <div className="pb-16 md:pb-0">
             {children}
           </div>
           <BottomNavbar />
