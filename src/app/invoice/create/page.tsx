@@ -6,9 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, PlusCircle, Trash2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { ArrowLeft, PlusCircle, Trash2, Loader } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import BottomNavbar from '@/components/bottom-navbar';
+import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 interface Item {
   id: number;
@@ -20,14 +23,26 @@ interface Item {
 
 export default function CreateInvoicePage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const partyId = searchParams.get('partyId');
+    
+    const { user } = useUser();
+    const firestore = useFirestore();
+    const { toast } = useToast();
+
     const [items, setItems] = useState<Item[]>([]);
     const [product, setProduct] = useState('');
     const [qty, setQty] = useState(1);
     const [rate, setRate] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleAddItem = () => {
         if (!product || qty <= 0 || rate <= 0) {
-            // Basic validation
+             toast({
+                variant: 'destructive',
+                title: 'Invalid Item',
+                description: 'Please fill in all item details correctly.',
+            });
             return;
         }
         const newItem: Item = {
@@ -48,13 +63,56 @@ export default function CreateInvoicePage() {
         setItems(items.filter(item => item.id !== id));
     };
 
-    const handleSaveBill = () => {
-        // Later we will implement saving the invoice to the database
-        // For now, just navigate to the party list
-        router.push('/invoice');
-    };
-
     const grandTotal = items.reduce((acc, item) => acc + item.total, 0);
+
+    const handleSaveBill = async () => {
+        if (!user || !firestore || !partyId) {
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Cannot save bill. User or party not found.',
+            });
+            return;
+        }
+        if (items.length === 0) {
+            toast({
+                variant: 'destructive',
+                title: 'Empty Bill',
+                description: 'Please add at least one item to the bill.',
+            });
+            return;
+        }
+
+        setIsLoading(true);
+
+        const invoiceData = {
+            userId: user.uid,
+            partyId,
+            items: items.map(({ id, ...rest }) => rest), // Remove client-side id
+            grandTotal,
+            createdAt: new Date().toISOString(),
+        };
+
+        try {
+            const invoicesColRef = collection(firestore, `users/${user.uid}/invoices`);
+            addDocumentNonBlocking(invoicesColRef, invoiceData);
+            
+            toast({
+                title: 'Invoice Saved',
+                description: 'The invoice has been saved successfully.',
+            });
+
+            router.push('/invoice');
+        } catch (error) {
+            console.error("Error saving invoice: ", error);
+            toast({
+                variant: 'destructive',
+                title: 'Save Failed',
+                description: 'Could not save the invoice. Please try again.',
+            });
+            setIsLoading(false);
+        }
+    };
 
     return (
         <div className="flex flex-col h-screen">
@@ -137,7 +195,9 @@ export default function CreateInvoicePage() {
                                 </div>
                             </CardContent>
                             <CardFooter>
-                                <Button className="w-full" size="lg" onClick={handleSaveBill}>Save Bill</Button>
+                                <Button className="w-full" size="lg" onClick={handleSaveBill} disabled={isLoading}>
+                                    {isLoading ? <Loader className="animate-spin" /> : 'Save Bill'}
+                                </Button>
                             </CardFooter>
                         </Card>
                     )}

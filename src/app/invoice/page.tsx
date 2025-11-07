@@ -4,16 +4,25 @@ import Header from '@/components/header';
 import BottomNavbar from '@/components/bottom-navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, User } from 'lucide-react';
+import { Plus, User, ArrowLeft, Loader } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
+import type { Party } from '@/models/types';
 
-// Mock data for parties has been removed.
-const parties: any[] = [];
 
 export default function InvoicePage() {
     const router = useRouter();
+    const { user } = useUser();
+    const firestore = useFirestore();
+
+    const partiesRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return collection(firestore, `users/${user.uid}/parties`);
+    }, [user, firestore]);
+
+    const { data: parties, isLoading } = useCollection<Party>(partiesRef);
 
   return (
     <div className="flex flex-col h-screen">
@@ -31,13 +40,18 @@ export default function InvoicePage() {
       </header>
       <main className="flex-1 p-4 overflow-y-auto">
         <div className="space-y-4">
-          {parties.length === 0 ? (
+          {isLoading && (
+            <div className="flex justify-center mt-16">
+                <Loader className="animate-spin text-primary" />
+            </div>
+          )}
+          {!isLoading && parties && parties.length === 0 ? (
             <div className="text-center text-muted-foreground mt-16">
               <p className="mb-2">No parties found.</p>
               <p className="text-sm">Click "Add Party" to create your first one.</p>
             </div>
           ) : (
-            parties.map((party) => (
+            parties?.map((party) => (
               <Card key={party.id} className="hover:bg-secondary/50 transition-colors">
                 <CardContent className="p-4 flex items-center gap-4">
                   <div className="p-3 bg-secondary rounded-full">
@@ -45,7 +59,7 @@ export default function InvoicePage() {
                   </div>
                   <div>
                     <p className="font-semibold text-card-foreground">{party.name}</p>
-                    <p className="text-sm text-muted-foreground">{party.city}</p>
+                    <p className="text-sm text-muted-foreground">{party.mobile}</p>
                   </div>
                 </CardContent>
               </Card>

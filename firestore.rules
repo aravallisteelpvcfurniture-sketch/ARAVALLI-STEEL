@@ -8,6 +8,8 @@
  * - /materials/{materialId}: Stores material options, publicly readable.
  * - /users/{userId}/configurations/{configurationId}: Stores user-specific furniture configurations, accessible only by the user.
  * - /users/{userId}/recommendations/{recommendationId}: Stores user-specific AI recommendations, accessible only by the user.
+ * - /users/{userId}/parties/{partyId}: Stores user-specific parties, accessible only by the user.
+ * - /users/{userId}/invoices/{invoiceId}: Stores user-specific invoices, accessible only by the user.
  *
  * Key Security Decisions:
  * - Users can only access their own data under the /users/{userId} collection.
@@ -128,6 +130,36 @@ service cloud.firestore {
       allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isExistingOwner(userId) && resource.data.userId == request.resource.data.userId;
       allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Secures user-specific parties, ensuring only the owner can read and write.
+     * @path /users/{userId}/parties/{partyId}
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/parties/{partyId} {
+        function isOwner(userId) {
+            return request.auth.uid == userId;
+        }
+
+        allow read, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update, delete: if isOwner(userId) && resource.data.userId == userId;
+    }
+
+    /**
+     * @description Secures user-specific invoices, ensuring only the owner can read and write.
+     * @path /users/{userId}/invoices/{invoiceId}
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/invoices/{invoiceId} {
+        function isOwner(userId) {
+            return request.auth.uid == userId;
+        }
+
+        allow read, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update, delete: if isOwner(userId) && resource.data.userId == userId;
     }
   }
 }
