@@ -1,6 +1,6 @@
 'use client';
 import type { Dispatch, SetStateAction, FC } from 'react';
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -29,7 +29,7 @@ interface AiRecommendationsProps {
 }
 
 const AiRecommendations: FC<AiRecommendationsProps> = ({ setConfig }) => {
-    const [state, formAction] = useFormState(getMaterialSizeRecommendationAction, { status: 'idle' });
+    const [state, formAction] = useActionState(getMaterialSizeRecommendationAction, { status: 'idle' });
     const { toast } = useToast();
     
     const form = useForm<FormValues>({
