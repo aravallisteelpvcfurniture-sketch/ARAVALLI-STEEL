@@ -32,12 +32,12 @@ export default function CreateInvoicePage() {
 
     const [items, setItems] = useState<Item[]>([]);
     const [product, setProduct] = useState('');
-    const [qty, setQty] = useState(1);
-    const [rate, setRate] = useState(0);
+    const [qty, setQty] = useState<number | ''>(1);
+    const [rate, setRate] = useState<number | ''>('');
     const [isLoading, setIsLoading] = useState(false);
 
     const handleAddItem = () => {
-        if (!product || qty <= 0 || rate <= 0) {
+        if (!product || !qty || qty <= 0 || !rate || rate <= 0) {
              toast({
                 variant: 'destructive',
                 title: 'Invalid Item',
@@ -56,7 +56,7 @@ export default function CreateInvoicePage() {
         // Reset form
         setProduct('');
         setQty(1);
-        setRate(0);
+        setRate('');
     };
 
     const handleRemoveItem = (id: number) => {
@@ -138,11 +138,11 @@ export default function CreateInvoicePage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="qty">Quantity</Label>
-                                    <Input id="qty" type="number" placeholder="0" value={qty} onChange={e => setQty(Number(e.target.value))} />
+                                    <Input id="qty" type="number" placeholder="1" value={qty} onChange={e => setQty(e.target.value === '' ? '' : Number(e.target.value))} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="rate">Rate</Label>
-                                    <Input id="rate" type="number" placeholder="0.00" value={rate} onChange={e => setRate(Number(e.target.value))} />
+                                    <Input id="rate" type="number" placeholder="0.00" value={rate} onChange={e => setRate(e.target.value === '' ? '' : Number(e.target.value))} />
                                 </div>
                             </div>
                         </CardContent>
