@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'Aravalli Configurator',
+  title: 'Aravalli Furniture',
   description: 'Configure your PVC furniture with Aravalli Steel',
 };
 
