@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from '@/firebase';
+import BottomNavbar from '@/components/bottom-navbar';
 
 export const metadata: Metadata = {
   title: 'Aravalli Furniture',
@@ -24,7 +25,10 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
-          {children}
+          <div className="pb-16 md:pb-0">
+            {children}
+          </div>
+          <BottomNavbar />
         </FirebaseClientProvider>
         <Toaster />
       </body>

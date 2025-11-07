@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import ArViewModal from './ar-view-modal';
 import { useFirestore, useUser, addDocumentNonBlocking } from '@/firebase';
 import { collection } from 'firebase/firestore';
+import BottomNavbar from './bottom-navbar';
 
 export type FurnitureType = 'chair' | 'table' | 'cabinet' | 'shelf';
 
@@ -124,20 +125,6 @@ const Configurator: FC = () => {
           <ThreeDPreview config={config} />
         </div>
       </main>
-      <footer className="bg-card border-t p-4 flex justify-center items-center gap-4">
-        <Button onClick={() => setArModalOpen(true)}>
-          <Camera />
-          AR View
-        </Button>
-        <Button onClick={handleSave}>
-          <Save />
-          Save Configuration
-        </Button>
-        <Button onClick={handleShare}>
-          <Share2 />
-          Share
-        </Button>
-      </footer>
       <ArViewModal isOpen={isArModalOpen} onOpenChange={setArModalOpen} />
     </div>
   );
