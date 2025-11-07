@@ -158,10 +158,10 @@ export default function CreateInvoicePage() {
                                     <Label htmlFor="rate">Rate</Label>
                                     <Input id="rate" type="number" value={rate} onChange={e => setRate(e.target.value === '' ? '' : Number(e.target.value))} />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="perKg">Per Kg</Label>
-                                    <Input id="perKg" type="number" value={perKg} onChange={e => setPerKg(e.target.value === '' ? '' : Number(e.target.value))} />
-                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="perKg">Per Kg</Label>
+                                <Input id="perKg" type="number" value={perKg} onChange={e => setPerKg(e.target.value === '' ? '' : Number(e.target.value))} />
                             </div>
                         </CardContent>
                         <CardFooter>
@@ -192,7 +192,14 @@ export default function CreateInvoicePage() {
                                     <TableBody>
                                         {items.map((item) => (
                                             <TableRow key={item.id}>
-                                                <TableCell className="font-medium">{item.product}</TableCell>
+                                                <TableCell className="font-medium">
+                                                    {item.product}
+                                                    {item.perKg > 0 && (
+                                                        <div className="text-xs text-muted-foreground">
+                                                            (Per Kg: {item.perKg})
+                                                        </div>
+                                                    )}
+                                                </TableCell>
                                                 <TableCell className="text-center">{item.qty}</TableCell>
                                                 <TableCell className="text-center">₹{item.rate.toFixed(2)}</TableCell>
                                                 <TableCell className="text-right">₹{item.total.toFixed(2)}</TableCell>
