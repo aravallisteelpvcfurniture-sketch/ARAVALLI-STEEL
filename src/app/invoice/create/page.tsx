@@ -149,19 +149,19 @@ export default function CreateInvoicePage() {
                                 <Label htmlFor="product">Product</Label>
                                 <Input id="product" placeholder="Enter product name" value={product} onChange={e => setProduct(e.target.value)} />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-3 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="qty">Quantity</Label>
                                     <Input id="qty" type="number" value={qty} onChange={e => setQty(e.target.value === '' ? '' : Number(e.target.value))} />
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label htmlFor="perKg">Per Kg</Label>
+                                    <Input id="perKg" type="number" value={perKg} onChange={e => setPerKg(e.target.value === '' ? '' : Number(e.target.value))} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="rate">Rate</Label>
                                     <Input id="rate" type="number" value={rate} onChange={e => setRate(e.target.value === '' ? '' : Number(e.target.value))} />
                                 </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="perKg">Per Kg</Label>
-                                <Input id="perKg" type="number" value={perKg} onChange={e => setPerKg(e.target.value === '' ? '' : Number(e.target.value))} />
                             </div>
                         </CardContent>
                         <CardFooter>
