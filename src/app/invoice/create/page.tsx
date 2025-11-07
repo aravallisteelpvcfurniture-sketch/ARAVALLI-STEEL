@@ -184,6 +184,7 @@ export default function CreateInvoicePage() {
                                         <TableRow>
                                             <TableHead>Product</TableHead>
                                             <TableHead className="text-center">Qty</TableHead>
+                                            <TableHead className="text-center">Per Kg</TableHead>
                                             <TableHead className="text-center">Rate</TableHead>
                                             <TableHead className="text-right">Total</TableHead>
                                             <TableHead className="w-[50px]"></TableHead>
@@ -194,13 +195,9 @@ export default function CreateInvoicePage() {
                                             <TableRow key={item.id}>
                                                 <TableCell className="font-medium">
                                                     {item.product}
-                                                    {item.perKg > 0 && (
-                                                        <div className="text-xs text-muted-foreground">
-                                                            (Per Kg: {item.perKg})
-                                                        </div>
-                                                    )}
                                                 </TableCell>
                                                 <TableCell className="text-center">{item.qty}</TableCell>
+                                                <TableCell className="text-center">{item.perKg > 0 ? item.perKg : '-'}</TableCell>
                                                 <TableCell className="text-center">₹{item.rate.toFixed(2)}</TableCell>
                                                 <TableCell className="text-right">₹{item.total.toFixed(2)}</TableCell>
                                                 <TableCell>
