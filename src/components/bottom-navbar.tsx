@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, LayoutGrid, ScanLine, User as UserIcon, MoreHorizontal, Plus } from 'lucide-react';
+import { Home, LayoutGrid, User as UserIcon, MoreHorizontal, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -68,16 +68,16 @@ const BottomNavbar = () => {
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-24 px-4 pointer-events-none">
-        <div className="relative h-full w-full pointer-events-auto">
+        <div className="relative h-full w-full">
             
-            <Link href="/scanner">
+            <Link href="/scanner" className="pointer-events-auto">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 size-16 bg-primary rounded-full flex items-center justify-center text-primary-foreground shadow-lg hover:bg-primary/90 transition-transform duration-300 ease-in-out hover:scale-110">
                     <Plus className="h-8 w-8" />
                 </div>
             </Link>
 
             <nav 
-                className="absolute bottom-4 left-0 right-0 h-16 bg-background rounded-2xl shadow-t-strong overflow-hidden"
+                className="absolute bottom-4 left-0 right-0 h-16 bg-background rounded-2xl shadow-t-strong overflow-hidden pointer-events-auto"
                 style={{
                     boxShadow: '0 -4px 12px -1px rgba(0, 0, 0, 0.08)'
                 }}
