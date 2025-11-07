@@ -17,42 +17,9 @@ const navItems = [
 
 const BottomNavbar = () => {
   const pathname = usePathname();
-  const { user } = useUser();
-  const firestore = useFirestore();
-
-  const userDocRef = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return doc(firestore, 'users', user.uid);
-  }, [firestore, user]);
-
-  const { data: userData } = useDoc(userDocRef);
-
-  const getInitials = (name: string | null | undefined) => {
-    if (!name) return <UserIcon className="h-5 w-5" />;
-    const names = name.split(' ');
-    if (names.length > 1) {
-      return `${names[0][0]}${names[names.length - 1][0]}`;
-    }
-    return names[0].substring(0, 2);
-  }
-
-  const AccountIcon = () => {
-    if (user) {
-      return (
-        <Avatar className="h-6 w-6">
-          <AvatarImage src={user.photoURL ?? ''} alt={userData?.profileName ?? 'User'} />
-          <AvatarFallback className="text-xs bg-muted-foreground/20">
-            {getInitials(userData?.profileName ?? user.email)}
-          </AvatarFallback>
-        </Avatar>
-      );
-    }
-    return <UserIcon className="h-6 w-6" />;
-  };
   
   const NavItem = ({ href, label, icon: Icon }: { href: string, label: string, icon: React.ElementType }) => {
     const isActive = pathname === href;
-    const isAccount = label === 'Account';
     
     return (
       <Link 
@@ -65,7 +32,7 @@ const BottomNavbar = () => {
           )}
       >
           <div className='flex items-center justify-center h-6 w-6'>
-            {isAccount ? <AccountIcon /> : <Icon className="h-6 w-6" />}
+            <Icon className="h-6 w-6" />
           </div>
           <span className="text-xs font-medium">{label}</span>
       </Link>
