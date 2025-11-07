@@ -1,3 +1,5 @@
+import Configurator from '@/components/configurator';
+
 export default function Home() {
-  return <></>;
+  return <Configurator />;
 }

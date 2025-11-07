@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "chair",
+      "description": "A modern PVC chair.",
+      "imageUrl": "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBjaGFpcnxlbnwwfHx8fDE3NjIzOTYxMzJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "modern chair"
+    },
+    {
+      "id": "table",
+      "description": "A sturdy PVC table.",
+      "imageUrl": "https://images.unsplash.com/photo-1604578762246-41134e37f9cc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxkaW5pbmclMjB0YWJsZXxlbnwwfHx8fDE3NjIzNzYyNTF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dining table"
+    },
+    {
+      "id": "cabinet",
+      "description": "A spacious PVC cabinet.",
+      "imageUrl": "https://images.unsplash.com/photo-1707898309204-3930c9c179e3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzdG9yYWdlJTIwY2FiaW5ldHxlbnwwfHx8fDE3NjI0OTM2NDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "storage cabinet"
+    },
+    {
+      "id": "shelf",
+      "description": "A wall-mounted PVC shelf.",
+      "imageUrl": "https://images.unsplash.com/photo-1567083348161-9dfccc0d47d9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHx3YWxsJTIwc2hlbGZ8ZW58MHx8fHwxNzYyNDkzNjQ5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "wall shelf"
+    }
+  ]
 }
