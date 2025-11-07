@@ -48,6 +48,12 @@ export default function CreateInvoicePage() {
         setItems(items.filter(item => item.id !== id));
     };
 
+    const handleSaveBill = () => {
+        // Later we will implement saving the invoice to the database
+        // For now, just navigate to the party list
+        router.push('/invoice');
+    };
+
     const grandTotal = items.reduce((acc, item) => acc + item.total, 0);
 
     return (
@@ -131,7 +137,7 @@ export default function CreateInvoicePage() {
                                 </div>
                             </CardContent>
                             <CardFooter>
-                                <Button className="w-full" size="lg">Save Bill</Button>
+                                <Button className="w-full" size="lg" onClick={handleSaveBill}>Save Bill</Button>
                             </CardFooter>
                         </Card>
                     )}
