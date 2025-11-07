@@ -37,6 +37,113 @@
         "email"
       ]
     },
+    "Party": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Party",
+      "type": "object",
+      "description": "Represents a party (customer/vendor) for invoicing.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the party."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who owns this party."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the party."
+        },
+        "mobile": {
+          "type": "string",
+          "description": "The party's mobile number."
+        },
+        "email": {
+          "type": "string",
+          "description": "The party's email address.",
+          "format": "email"
+        },
+        "address": {
+          "type": "string",
+          "description": "The party's full address."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time the party was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "mobile"
+      ]
+    },
+    "Invoice": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Invoice",
+      "type": "object",
+      "description": "Represents an invoice created for a party.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the invoice."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who owns this invoice."
+        },
+        "partyId": {
+          "type": "string",
+          "description": "Reference to the Party this invoice belongs to."
+        },
+        "items": {
+          "type": "array",
+          "description": "List of items in the invoice.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "product": {
+                "type": "string"
+              },
+              "qty": {
+                "type": "number"
+              },
+              "rate": {
+                "type": "number"
+              },
+              "total": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "product",
+              "qty",
+              "rate",
+              "total"
+            ]
+          }
+        },
+        "grandTotal": {
+          "type": "number",
+          "description": "The total amount of the invoice."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time the invoice was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "partyId",
+        "items",
+        "grandTotal"
+      ]
+    },
     "FurnitureItem": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "FurnitureItem",
@@ -301,8 +408,48 @@
             }
           ]
         }
+      },
+      {
+        "path": "/users/{userId}/parties/{partyId}",
+        "definition": {
+          "entityName": "Party",
+          "schema": {
+            "$ref": "#/backend/entities/Party"
+          },
+          "description": "Stores parties for each user. Only the user can read/write their own parties.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "partyId",
+              "description": "The unique identifier of the party."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/invoices/{invoiceId}",
+        "definition": {
+          "entityName": "Invoice",
+          "schema": {
+            "$ref": "#/backend/entities/Invoice"
+          },
+          "description": "Stores invoices for each user. Only the user can read/write their own invoices.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "invoiceId",
+              "description": "The unique identifier of the invoice."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to support the Aravalli Configurator app's features, focusing on furniture customization, AI-powered recommendations, and user-specific data. The design emphasizes Authorization Independence (CRITICAL) and supports the required QAPs. User-owned data is stored under the `/users/{userId}` path, ensuring that security rules can easily control access based on the authenticated user's ID. The denormalization strategy involves storing the `userId` within each `Configuration` and `Recommendation` document, eliminating the need for `get()` calls in security rules to verify ownership. This directly addresses Authorization Independence. \n\nQAPs are supported by the structural segregation of user data and globally available data (furniture items, materials). List operations are secured by ensuring that only the authenticated user can access configurations and recommendations under their respective `/users/{userId}` path. The `furniture_items` and `materials` collections support public read access, allowing for easy listing and display of available options.\n\nSpecifically:\n\n*   `/users/{userId}` collections ensure private user data.\n*   `configurations` subcollections under `/users/{userId}` store configurations owned by the user.\n*   `recommendations` subcollections under `/users/{userId}` store AI recommendations for each user.\n*   `furniture_items` and `materials` are globally accessible, enabling easy browsing and filtering.\n\nThis structure facilitates simple, robust, and easily debuggable security rules by adhering to the core design principles outlined."
+    "reasoning": "The Firestore data structure is designed to support the Aravalli Configurator app's features, focusing on furniture customization, AI-powered recommendations, and user-specific data. The design emphasizes Authorization Independence (CRITICAL) and supports the required QAPs. User-owned data is stored under the `/users/{userId}` path, ensuring that security rules can easily control access based on the authenticated user's ID. The denormalization strategy involves storing the `userId` within each `Configuration` and `Recommendation` document, eliminating the need for `get()` calls in security rules to verify ownership. This directly addresses Authorization Independence. \n\nQAPs are supported by the structural segregation of user data and globally available data (furniture items, materials). List operations are secured by ensuring that only the authenticated user can access configurations and recommendations under their respective `/users/{userId}` path. The `furniture_items` and `materials` collections support public read access, allowing for easy listing and display of available options.\n\nSpecifically:\n\n*   `/users/{userId}` collections ensure private user data.\n*   `configurations` subcollections under `/users/{userId}` store configurations owned by the user.\n*   `recommendations` subcollections under `/users/{userId}` store AI recommendations for each user.\n*   `furniture_items` and `materials` are globally accessible, enabling easy browsing and filtering.\n*   `parties` and `invoices` subcollections under `/users/{userId}` store user-specific invoicing data."
   }
 }
