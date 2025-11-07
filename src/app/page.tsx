@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Configurator from '@/components/configurator';
 import { Loader } from 'lucide-react';
+import BottomNavbar from '@/components/bottom-navbar';
 
 export default function Home() {
   const { user, isUserLoading } = useUser();
@@ -23,5 +24,10 @@ export default function Home() {
     );
   }
   
-  return <Configurator />;
+  return (
+    <>
+      <Configurator />
+      <BottomNavbar />
+    </>
+  );
 }
