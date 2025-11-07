@@ -39,7 +39,7 @@ export default function Home() {
       <Header />
       <main className="flex-1 p-4">
         <div className="grid grid-cols-3 gap-4">
-            <ToolCard icon={Receipt} title="Invoice Bill" href="#" />
+            <ToolCard icon={Receipt} title="Invoice Bill" href="/invoice" />
             <ToolCard icon={Handshake} title="Greetings" href="#" />
             <ToolCard icon={Users} title="Visitors" href="#" />
         </div>
