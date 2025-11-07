@@ -105,7 +105,7 @@ export default function LoginPage() {
       const newUser = result.user;
       const additionalInfo = getAdditionalUserInfo(result);
 
-      if (newUser && additionalInfo?.isNewUser) {
+      if (firestore && newUser && additionalInfo?.isNewUser) {
         const userDocRef = doc(firestore, 'users', newUser.uid);
         
         setDocumentNonBlocking(userDocRef, {
