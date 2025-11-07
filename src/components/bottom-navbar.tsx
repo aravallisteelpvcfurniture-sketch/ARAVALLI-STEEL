@@ -52,7 +52,7 @@ const BottomNavbar = () => {
   };
 
   return (
-    <div className="md:hidden fixed bottom-4 left-0 right-0 z-50 flex justify-center">
+    <div className="md:hidden fixed bottom-6 left-0 right-0 z-50 flex justify-center">
         <nav className="flex justify-around items-center gap-2 bg-background/80 backdrop-blur-sm border rounded-full shadow-lg p-2">
             {navItems.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
