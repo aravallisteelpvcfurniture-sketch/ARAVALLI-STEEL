@@ -3,7 +3,7 @@ import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Header from '@/components/header';
-import { Loader, Receipt, Handshake } from 'lucide-react';
+import { Loader, Receipt, Handshake, Users } from 'lucide-react';
 import BottomNavbar from '@/components/bottom-navbar';
 import Link from 'next/link';
 
@@ -40,7 +40,8 @@ export default function Home() {
       <main className="flex-1 p-4">
         <div className="grid grid-cols-2 gap-4">
             <ToolCard icon={Receipt} title="Invoice Bill" href="#" />
-            <ToolCard icon={Handshake} title="Greetings Visitors" href="#" />
+            <ToolCard icon={Handshake} title="Greetings" href="#" />
+            <ToolCard icon={Users} title="Visitors" href="#" />
         </div>
       </main>
       <BottomNavbar />
