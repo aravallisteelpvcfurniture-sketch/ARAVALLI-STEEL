@@ -32,7 +32,7 @@ export default function CreateInvoicePage() {
 
     const [items, setItems] = useState<Item[]>([]);
     const [product, setProduct] = useState('');
-    const [qty, setQty] = useState<number | ''>(1);
+    const [qty, setQty] = useState<number | ''>('');
     const [rate, setRate] = useState<number | ''>('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -55,7 +55,7 @@ export default function CreateInvoicePage() {
         setItems([...items, newItem]);
         // Reset form
         setProduct('');
-        setQty(1);
+        setQty('');
         setRate('');
     };
 
@@ -138,7 +138,7 @@ export default function CreateInvoicePage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="qty">Quantity</Label>
-                                    <Input id="qty" type="number" placeholder="1" value={qty} onChange={e => setQty(e.target.value === '' ? '' : Number(e.target.value))} />
+                                    <Input id="qty" type="number" placeholder="0" value={qty} onChange={e => setQty(e.target.value === '' ? '' : Number(e.target.value))} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="rate">Rate</Label>
