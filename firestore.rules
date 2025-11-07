@@ -1,0 +1,133 @@
+/**
+ * @file Firestore Security Rules for Aravalli Configurator App
+ * @description This ruleset enforces a strict user-ownership model for user profiles, configurations, and recommendations, while allowing public read access to furniture items and materials.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profile data, accessible only by the user themselves.
+ * - /furniture_items/{furnitureItemId}: Stores furniture item details, publicly readable.
+ * - /materials/{materialId}: Stores material options, publicly readable.
+ * - /users/{userId}/configurations/{configurationId}: Stores user-specific furniture configurations, accessible only by the user.
+ * - /users/{userId}/recommendations/{recommendationId}: Stores user-specific AI recommendations, accessible only by the user.
+ *
+ * Key Security Decisions:
+ * - Users can only access their own data under the /users/{userId} collection.
+ * - Furniture items and materials are publicly readable.
+ * - User listing is disallowed to protect user privacy.
+ * - Authorization decisions are made independently on each document by denormalizing the userId into subcollection documents.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Secures user profiles, ensuring only the user can read and write their own data.
+     * @path /users/{userId}
+     * @allow (create) - Authenticated user with matching userId can create their profile.
+     * @allow (get, update, delete) - Authenticated user with matching userId can read, update, or delete their profile.
+     * @deny (create) - Authenticated user tries to create a profile with a userId that doesn't match their own.
+     * @deny (get, update, delete) - Authenticated user tries to read, update, or delete another user's profile.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false; // User listing is not allowed.
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Allows public read access to furniture items.
+     * @path /furniture_items/{furnitureItemId}
+     * @allow (get, list) - Any user can read furniture item data.
+     * @deny (create, update, delete) - Only admins can create, update, or delete furniture items.  Placeholder for admin-only writes.
+     * @principle Provides public read access while restricting write access.
+     */
+    match /furniture_items/{furnitureItemId} {
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Add admin role check.
+    }
+
+    /**
+     * @description Allows public read access to material options.
+     * @path /materials/{materialId}
+     * @allow (get, list) - Any user can read material data.
+     * @deny (create, update, delete) - Only admins can create, update, or delete material data. Placeholder for admin-only writes.
+     * @principle Provides public read access while restricting write access.
+     */
+    match /materials/{materialId} {
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Add admin role check.
+    }
+
+    /**
+     * @description Secures user-specific furniture configurations, ensuring only the owner can read and write.
+     * @path /users/{userId}/configurations/{configurationId}
+     * @allow (create) - Authenticated user with matching userId can create a configuration.
+     * @allow (get, list, update, delete) - Authenticated user with matching userId can read, list, update, or delete their own configurations.
+     * @deny (create) - Authenticated user tries to create a configuration with a userId that doesn't match their own.
+     * @deny (get, list, update, delete) - Authenticated user tries to read, list, update, or delete another user's configurations.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/configurations/{configurationId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && resource.data.userId == request.resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Secures user-specific AI recommendations, ensuring only the owner can read and write.
+     * @path /users/{userId}/recommendations/{recommendationId}
+     * @allow (create) - Authenticated user with matching userId can create a recommendation.
+     * @allow (get, list, update, delete) - Authenticated user with matching userId can read, list, update, or delete their own recommendations.
+     * @deny (create) - Authenticated user tries to create a recommendation with a userId that doesn't match their own.
+     * @deny (get, list, update, delete) - Authenticated user tries to read, list, update, or delete another user's recommendations.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/recommendations/{recommendationId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && resource.data.userId == request.resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+    }
+  }
+}
