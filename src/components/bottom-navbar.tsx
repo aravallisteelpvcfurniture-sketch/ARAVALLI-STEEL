@@ -29,7 +29,12 @@ const BottomNavbar = () => {
   const { data: userData } = useDoc(userDocRef);
 
   const getInitials = (name: string | null | undefined) => {
-    return name ? name.split(' ').map(n => n[0]).join('') : <UserIcon className="h-6 w-6" />;
+    if (!name) return <UserIcon className="h-6 w-6" />;
+    const names = name.split(' ');
+    if (names.length > 1) {
+      return `${names[0][0]}${names[names.length - 1][0]}`;
+    }
+    return names[0].substring(0, 2);
   }
 
   const AccountIcon = () => {
@@ -52,16 +57,16 @@ const BottomNavbar = () => {
             {navItems.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
             return (
-                <Link key={label} href={href} legacyBehavior>
-                <a
+                <Link 
+                    key={label} 
+                    href={href}
                     className={cn(
-                    'flex flex-col items-center justify-center text-muted-foreground w-16 h-12 transition-all duration-300 rounded-full',
-                    isActive ? 'bg-primary/10 text-primary' : 'hover:bg-primary/5'
+                        'flex flex-col items-center justify-center text-muted-foreground w-16 h-12 transition-all duration-300 rounded-full',
+                        isActive ? 'bg-primary/10 text-primary' : 'hover:bg-primary/5'
                     )}
                 >
                     {label === 'Account' ? <AccountIcon /> : <Icon className="h-5 w-5" />}
                     <span className="text-xs mt-1">{label}</span>
-                </a>
                 </Link>
             );
             })}
