@@ -52,8 +52,8 @@ const BottomNavbar = () => {
   };
 
   return (
-    <div className="md:hidden fixed bottom-8 left-0 right-0 z-50 flex justify-center">
-        <nav className="flex justify-around items-center gap-2 bg-background/80 backdrop-blur-sm border rounded-full shadow-lg p-2">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50">
+        <nav className="flex justify-around items-center w-full bg-background border-t border-border shadow-t-lg">
             {navItems.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
             return (
@@ -61,8 +61,8 @@ const BottomNavbar = () => {
                     key={label} 
                     href={href}
                     className={cn(
-                        'flex flex-col items-center justify-center text-muted-foreground w-16 h-12 transition-all duration-300 rounded-full',
-                        isActive ? 'bg-primary/10 text-primary' : 'hover:bg-primary/5'
+                        'flex flex-col items-center justify-center text-muted-foreground w-full h-16 transition-colors duration-200',
+                        isActive ? 'text-primary' : 'hover:text-primary/80'
                     )}
                 >
                     {label === 'Account' ? <AccountIcon /> : <Icon className="h-5 w-5" />}
