@@ -2,7 +2,7 @@
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import Configurator from '@/components/configurator';
+import Header from '@/components/header';
 import { Loader } from 'lucide-react';
 import BottomNavbar from '@/components/bottom-navbar';
 
@@ -25,9 +25,10 @@ export default function Home() {
   }
   
   return (
-    <>
-      <Configurator />
+    <div className="flex flex-col h-screen">
+      <Header />
+      <main className="flex-1"></main>
       <BottomNavbar />
-    </>
+    </div>
   );
 }
