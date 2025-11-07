@@ -9,14 +9,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 
-// Mock data for parties
-const parties = [
-  { id: 1, name: 'Ashok Hardware', city: 'Jaipur' },
-  { id: 2, name: 'Raman Steel Traders', city: 'Delhi' },
-  { id: 3, name: 'Priya PVC Pipes', city: 'Mumbai' },
-  { id: 4, name: 'Gupta & Sons', city: 'Jaipur' },
-  { id: 5, name: 'National Traders', city: 'Kota' },
-];
+// Mock data for parties has been removed.
+const parties: any[] = [];
 
 export default function InvoicePage() {
     const router = useRouter();
@@ -37,19 +31,26 @@ export default function InvoicePage() {
       </header>
       <main className="flex-1 p-4 overflow-y-auto">
         <div className="space-y-4">
-          {parties.map((party) => (
-            <Card key={party.id} className="hover:bg-secondary/50 transition-colors">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="p-3 bg-secondary rounded-full">
-                  <User className="h-6 w-6 text-secondary-foreground" />
-                </div>
-                <div>
-                  <p className="font-semibold text-card-foreground">{party.name}</p>
-                  <p className="text-sm text-muted-foreground">{party.city}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {parties.length === 0 ? (
+            <div className="text-center text-muted-foreground mt-16">
+              <p className="mb-2">No parties found.</p>
+              <p className="text-sm">Click "Add Party" to create your first one.</p>
+            </div>
+          ) : (
+            parties.map((party) => (
+              <Card key={party.id} className="hover:bg-secondary/50 transition-colors">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="p-3 bg-secondary rounded-full">
+                    <User className="h-6 w-6 text-secondary-foreground" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-card-foreground">{party.name}</p>
+                    <p className="text-sm text-muted-foreground">{party.city}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
       </main>
       <BottomNavbar />
