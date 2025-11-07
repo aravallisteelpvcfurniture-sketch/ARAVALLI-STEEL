@@ -47,13 +47,23 @@ export default function CreateInvoicePage() {
             });
             return;
         }
+
+        const perKgValue = perKg || 0;
+        let total;
+        
+        if (perKgValue > 0) {
+            total = qty * rate * perKgValue;
+        } else {
+            total = qty * rate;
+        }
+
         const newItem: Item = {
             id: Date.now(),
             product,
             qty,
             rate,
-            perKg: perKg || 0,
-            total: qty * rate,
+            perKg: perKgValue,
+            total,
         };
         setItems([...items, newItem]);
         // Reset form
