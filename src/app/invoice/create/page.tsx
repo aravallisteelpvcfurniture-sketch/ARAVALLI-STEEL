@@ -138,11 +138,11 @@ export default function CreateInvoicePage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="qty">Quantity</Label>
-                                    <Input id="qty" type="number" placeholder="0" value={qty} onChange={e => setQty(e.target.value === '' ? '' : Number(e.target.value))} />
+                                    <Input id="qty" type="number" value={qty} onChange={e => setQty(e.target.value === '' ? '' : Number(e.target.value))} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="rate">Rate</Label>
-                                    <Input id="rate" type="number" placeholder="0.00" value={rate} onChange={e => setRate(e.target.value === '' ? '' : Number(e.target.value))} />
+                                    <Input id="rate" type="number" value={rate} onChange={e => setRate(e.target.value === '' ? '' : Number(e.target.value))} />
                                 </div>
                             </div>
                         </CardContent>
