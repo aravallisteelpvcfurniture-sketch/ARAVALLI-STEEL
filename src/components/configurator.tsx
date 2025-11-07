@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Save, Share2, Camera } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import ArViewModal from './ar-view-modal';
+import { useFirestore, useUser, addDocumentNonBlocking } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
 export type FurnitureType = 'chair' | 'table' | 'cabinet' | 'shelf';
 
@@ -46,10 +48,12 @@ const Configurator: FC = () => {
   const [config, setConfig] = useState<Configuration>(initialConfiguration);
   const [isArModalOpen, setArModalOpen] = useState(false);
   const { toast } = useToast();
+  const { user } = useUser();
+  const firestore = useFirestore();
 
   useEffect(() => {
     try {
-      const savedConfig = localStorage.getItem('aravalli-config');
+      const savedConfig = localStorage.getItem('aravalli-config-local');
       if (savedConfig) {
         setConfig(JSON.parse(savedConfig));
       }
@@ -58,18 +62,43 @@ const Configurator: FC = () => {
     }
   }, []);
 
-  const handleSave = () => {
+  useEffect(() => {
+    // Save to local storage on every change for non-logged-in users or as a backup
     try {
-      localStorage.setItem('aravalli-config', JSON.stringify(config));
+        localStorage.setItem('aravalli-config-local', JSON.stringify(config));
+    } catch (error) {
+        console.error("Could not save configuration to local storage.", error);
+    }
+  }, [config]);
+
+
+  const handleSave = () => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Not Logged In",
+        description: "Please log in to save your configurations.",
+      });
+      return;
+    }
+    
+    try {
+      const configurationsColRef = collection(firestore, `users/${user.uid}/configurations`);
+      addDocumentNonBlocking(configurationsColRef, {
+        ...config,
+        userId: user.uid,
+        configurationDate: new Date().toISOString(),
+      });
+      
       toast({
         title: "Configuration Saved",
-        description: "Your furniture configuration has been saved locally.",
+        description: "Your furniture configuration has been saved to your account.",
       });
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Save Failed",
-        description: "Could not save configuration.",
+        description: "Could not save configuration to your account.",
       });
     }
   };
