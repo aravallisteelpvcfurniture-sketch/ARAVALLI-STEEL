@@ -45,7 +45,16 @@ export default function PartyDetailsPage() {
             return;
         }
 
-        const invoiceUrl = `${window.location.origin}/invoice/${invoiceId}?print=true`;
+        if (!user) {
+             toast({
+                variant: 'destructive',
+                title: "User not found",
+                description: "You must be logged in to share an invoice.",
+            });
+            return;
+        }
+
+        const invoiceUrl = `${window.location.origin}/invoice/${invoiceId}?print=true&uid=${user.uid}`;
         
         const message = `Dear ${party.name},
 Greetings from ARAVALLI FURNITURE.
