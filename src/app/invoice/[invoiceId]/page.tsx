@@ -1,5 +1,4 @@
 'use client';
-import { useEffect } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -34,7 +33,7 @@ export default function InvoicePrintPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-screen bg-gray-100">
+            <div className="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
                 <Loader className="animate-spin text-blue-600" />
             </div>
         );
@@ -42,7 +41,7 @@ export default function InvoicePrintPage() {
     
     if (!invoice || !party) {
         return (
-           <div className="flex flex-col items-center justify-center h-screen text-center bg-gray-100">
+           <div className="flex flex-col items-center justify-center h-screen text-center bg-gray-100 dark:bg-gray-900">
                <p className="text-xl font-semibold text-red-600">Invoice not found</p>
                <Button onClick={() => router.back()} className="mt-4 bg-blue-600 hover:bg-blue-700 text-white">Go Back</Button>
            </div>
@@ -53,114 +52,105 @@ export default function InvoicePrintPage() {
    // Assuming a fixed tax rate for now as it's not in the model.
    const taxRate = 0.05; // 5%
    const taxAmount = subTotal * taxRate;
-   const balanceDue = subTotal + taxAmount;
+   const grandTotal = subTotal + taxAmount;
+   const amountPaid = 0; // Assuming not tracked in model yet
+   const balanceDue = grandTotal - amountPaid;
 
     return (
-        <div className={`bg-gray-100 min-h-screen font-sans text-gray-800 ${isPrintView ? 'p-0' : 'p-4 md:p-8'}`}>
-             <header className="print:hidden flex items-center justify-between p-4 mb-4 max-w-5xl mx-auto">
+        <div className={`bg-gray-100 dark:bg-gray-900 min-h-screen font-sans text-gray-800 dark:text-gray-200 ${isPrintView ? '' : 'p-4 md:p-8'}`}>
+             <header className="print:hidden flex items-center justify-between p-4 mb-4 max-w-4xl mx-auto">
                 <Button variant="ghost" size="icon" onClick={() => router.back()}>
                     <ArrowLeft />
                 </Button>
-                <h1 className="text-xl font-bold text-gray-700">Invoice Preview</h1>
+                <h1 className="text-xl font-bold text-gray-700 dark:text-gray-300">Invoice Preview</h1>
                 <Button onClick={() => window.print()} className="bg-blue-600 hover:bg-blue-700 text-white">Print</Button>
             </header>
-            <div className="max-w-5xl mx-auto bg-white shadow-lg print:shadow-none">
-                {/* Decorative Header */}
-                <div className="h-4 bg-gradient-to-r from-blue-500 to-cyan-400 print:hidden"></div>
+            <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 shadow-lg print:shadow-none rounded-lg">
                 <div className="p-8 md:p-12">
-                    <header className="flex justify-between items-start mb-10">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900 mb-2 font-headline">Aravalli Furniture</h1>
-                            <p className="text-sm text-gray-500">123 Industrial Area, Kishangarh</p>
-                            <p className="text-sm text-gray-500">Rajasthan, 305801</p>
-                            <p className="text-sm text-gray-500">India</p>
-                        </div>
+                    <header className="flex justify-between items-start pb-6 border-b border-gray-200 dark:border-gray-700">
+                        <h1 className="text-4xl font-bold text-gray-800 dark:text-white">INVOICE</h1>
                         <div className="text-right">
-                            <h2 className="text-5xl font-light text-blue-600 tracking-wider">INVOICE</h2>
+                            <h2 className="text-2xl font-bold text-blue-600 uppercase font-headline">ARAVALLI</h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">123 Industrial Area, Kishangarh, Rajasthan</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">P: (123) 456-7890</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">email@aravalli.com</p>
                         </div>
                     </header>
-
-                    <section className="grid grid-cols-2 border-y border-gray-200 py-4 mb-10">
-                        <div>
-                            <div className="grid grid-cols-2 text-sm">
-                                <span className="font-semibold text-gray-500">Invoice#</span><span className="font-bold text-gray-800">INV-{invoice.id.substring(0, 6).toUpperCase()}</span>
-                                <span className="font-semibold text-gray-500">Invoice Date</span><span className="font-bold text-gray-800">{new Date(invoice.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}</span>
-                                <span className="font-semibold text-gray-500">Terms</span><span className="font-bold text-gray-800">Due on Receipt</span>
-                                <span className="font-semibold text-gray-500">Due Date</span><span className="font-bold text-gray-800">{new Date(invoice.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}</span>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section className="grid grid-cols-2 gap-8 mb-10">
-                        <div>
-                            <h3 className="text-sm font-semibold text-gray-500 border-b pb-2 mb-2">Bill To</h3>
-                            <p className="font-bold text-lg text-gray-900">{party.name}</p>
-                            <p className="text-sm text-gray-600">{party.address}</p>
-                            <p className="text-sm text-gray-600">{party.mobile}</p>
-                        </div>
-                         <div>
-                            <h3 className="text-sm font-semibold text-gray-500 border-b pb-2 mb-2">Ship To</h3>
-                            <p className="font-bold text-lg text-gray-900">{party.name}</p>
-                            <p className="text-sm text-gray-600">{party.address || 'N/A'}</p>
-                        </div>
-                    </section>
-
-                    <table className="w-full text-sm">
-                        <thead className="bg-blue-800 text-white">
-                            <tr>
-                                <th className="p-3 text-left w-12">#</th>
-                                <th className="p-3 text-left">Item & Description</th>
-                                <th className="p-3 text-right w-24">Qty</th>
-                                <th className="p-3 text-right w-32">Rate</th>
-                                <th className="p-3 text-right w-32">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {invoice.items.map((item, index) => (
-                                <tr key={index} className="border-b border-gray-200">
-                                    <td className="p-3 text-center">{index + 1}</td>
-                                    <td className="p-3">
-                                        <p className="font-semibold">{item.product}</p>
-                                        {item.perKg > 0 && <p className="text-xs text-gray-500">Qty: {item.qty} x {item.perKg} kg</p>}
-                                    </td>
-                                    <td className="p-3 text-right">{item.perKg > 0 ? (item.qty * item.perKg).toFixed(2) : item.qty.toFixed(2)}</td>
-                                    <td className="p-3 text-right">₹{item.rate.toFixed(2)}</td>
-                                    <td className="p-3 text-right">₹{item.total.toFixed(2)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-
-                    <div className="flex justify-end mt-4">
-                        <div className="w-full max-w-sm text-sm">
-                             <div className="flex justify-between py-2 border-b">
-                                <span className="font-semibold text-gray-600">Sub Total</span>
-                                <span>₹{subTotal.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between py-2 border-b">
-                                <span className="font-semibold text-gray-600">Tax Rate</span>
-                                <span>{(taxRate * 100).toFixed(2)}%</span>
-                            </div>
-                            <div className="flex justify-between py-2 font-bold text-lg bg-gray-100 px-2 rounded">
-                                <span className="text-gray-800">Total</span>
-                                <span className="text-gray-800">₹{balanceDue.toFixed(2)}</span>
-                            </div>
-                             <div className="flex justify-between py-2 font-bold text-lg text-blue-800">
-                                <span >Balance Due</span>
-                                <span >₹{balanceDue.toFixed(2)}</span>
-                            </div>
-                        </div>
-                    </div>
                     
-                    <footer className="mt-16">
-                        <p className="text-sm text-gray-500 mb-4">Thanks for shopping with us.</p>
-                        <h4 className="font-bold text-gray-700 text-sm mb-1">Terms & Conditions</h4>
-                        <p className="text-xs text-gray-500">Full payment is due upon receipt of this invoice. Late payments may incur additional charges or interest as per the applicable laws.</p>
+                    <section className="flex justify-between mt-8">
+                        <div>
+                            <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase">Billed To</h3>
+                            <p className="font-bold text-lg text-gray-900 dark:text-white mt-1">{party.name}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">{party.address}</p>
+                        </div>
+                        <div className="text-right">
+                             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                                <span className="font-semibold text-gray-500 dark:text-gray-400">Invoice Number</span><span className="text-gray-800 dark:text-gray-100 font-medium">#{invoice.id.substring(0, 6).toUpperCase()}</span>
+                                <span className="font-semibold text-gray-500 dark:text-gray-400">Date of Issue</span><span className="text-gray-800 dark:text-gray-100 font-medium">{new Date(invoice.createdAt).toLocaleDateString('en-GB')}</span>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section className="mt-10">
+                        <table className="w-full text-sm">
+                            <thead className="bg-gray-800 dark:bg-gray-900 text-white">
+                                <tr>
+                                    <th className="p-3 text-left font-semibold">DESCRIPTION</th>
+                                    <th className="p-3 text-right font-semibold w-24">RATE</th>
+                                    <th className="p-3 text-right font-semibold w-20">QTY</th>
+                                    <th className="p-3 text-right font-semibold w-32">AMOUNT</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {invoice.items.map((item, index) => (
+                                    <tr key={index} className="border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 even:bg-gray-50 dark:even:bg-gray-700/50">
+                                        <td className="p-3">
+                                            <p className="font-medium text-gray-800 dark:text-gray-100">{item.product}</p>
+                                            {item.perKg > 0 && <p className="text-xs text-gray-500 dark:text-gray-400">({item.qty} x {item.perKg} kg)</p>}
+                                        </td>
+                                        <td className="p-3 text-right">₹{item.rate.toFixed(2)}</td>
+                                        <td className="p-3 text-right">{item.perKg > 0 ? (item.qty * item.perKg).toFixed(2) : item.qty.toFixed(2)}</td>
+                                        <td className="p-3 text-right font-medium">₹{item.total.toFixed(2)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section className="flex justify-end mt-6">
+                        <div className="w-full max-w-xs text-sm">
+                            <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-600">
+                                <span className="text-gray-600 dark:text-gray-300">Subtotal</span>
+                                <span className="font-medium text-gray-800 dark:text-gray-100">₹{subTotal.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-600">
+                                <span className="text-gray-600 dark:text-gray-300">Tax ({(taxRate * 100).toFixed(0)}%)</span>
+                                <span className="font-medium text-gray-800 dark:text-gray-100">₹{taxAmount.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-600">
+                                <span className="text-gray-600 dark:text-gray-300">Total</span>
+                                <span className="font-medium text-gray-800 dark:text-gray-100">₹{grandTotal.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between py-2 font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 my-2 rounded">
+                                <span>Balance Due</span>
+                                <span>₹{balanceDue.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <footer className="mt-12 pt-6 border-t border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="flex justify-between">
+                            <div>
+                                <h4 className="font-semibold text-gray-600 dark:text-gray-300 mb-1">Terms &amp; conditions</h4>
+                                <p>Payment is due within 30 days. Late payments are subject to fees.</p>
+                            </div>
+                            <div className="w-48 text-center">
+                                <div className="border-b-2 border-gray-400 border-dotted h-16"></div>
+                                <p className="mt-2">Authorized Signature</p>
+                            </div>
+                        </div>
                     </footer>
                 </div>
-                 {/* Decorative Footer */}
-                 <div className="h-4 bg-gradient-to-r from-blue-500 to-cyan-400 print:hidden"></div>
             </div>
         </div>
     );
-}
