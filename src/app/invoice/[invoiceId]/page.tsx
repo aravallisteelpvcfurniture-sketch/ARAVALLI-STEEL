@@ -1,12 +1,13 @@
 'use client';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
-import { useUser, useFirestore, useDoc, useMemoFirebase, initializeFirebase } from '@/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase, initializeFirebase, addDocumentNonBlocking } from '@/firebase';
+import { doc, getDoc, collection } from 'firebase/firestore';
 import type { Invoice, Party } from '@/models/types';
 import { Loader, ArrowLeft, Printer, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { getInvoiceForSharing } from '@/app/actions';
 
 const InvoiceContent = ({ invoice, party }: { invoice: Invoice, party: Party }) => {
     const subTotal = invoice.items.reduce((acc, item) => acc + item.total, 0);
@@ -52,7 +53,8 @@ const InvoiceContent = ({ invoice, party }: { invoice: Invoice, party: Party }) 
                     <thead >
                         <tr className="bg-primary text-primary-foreground uppercase text-sm">
                             <th className="p-3">Description</th>
-                            <th className="p-3 text-right w-24">Qty</th>
+                            <th className="p-3 text-center w-24">Qty</th>
+                            <th className="p-3 text-center w-24">Per Kg</th>
                             <th className="p-3 text-right w-32">Unit Price</th>
                             <th className="p-3 text-right w-32">Total</th>
                         </tr>
@@ -63,7 +65,8 @@ const InvoiceContent = ({ invoice, party }: { invoice: Invoice, party: Party }) 
                                 <td className="p-3">
                                     <p className="font-medium text-gray-800">{item.product}</p>
                                 </td>
-                                <td className="p-3 text-right">{item.qty}</td>
+                                <td className="p-3 text-center">{item.qty}</td>
+                                <td className="p-3 text-center">{item.perKg > 0 ? item.perKg : '-'}</td>
                                 <td className="p-3 text-right">₹{item.rate.toFixed(2)}</td>
                                 <td className="p-3 text-right font-medium">₹{item.total.toFixed(2)}</td>
                             </tr>
@@ -121,23 +124,13 @@ const InvoicePrintView = () => {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const { firestore } = initializeFirebase();
-                const invoiceRef = doc(firestore, `users/${userId}/invoices`, invoiceId);
-                const invoiceSnap = await getDoc(invoiceRef);
-
-                if (!invoiceSnap.exists()) {
-                    throw new Error("Invoice not found.");
-                }
-                const invoice = { id: invoiceSnap.id, ...invoiceSnap.data() } as Invoice;
-
-                const partyRef = doc(firestore, `users/${userId}/parties`, invoice.partyId);
-                const partySnap = await getDoc(partyRef);
-
-                if (!partySnap.exists()) {
-                    throw new Error("Party not found.");
-                }
-                const party = { id: partySnap.id, ...partySnap.data() } as Party;
+                // We use the server action here to fetch data without needing client-side auth
+                const { invoice, party, error: serverError } = await getInvoiceForSharing(userId, invoiceId);
                 
+                if (serverError || !invoice || !party) {
+                    throw new Error(serverError || "Could not fetch invoice data.");
+                }
+
                 setData({ invoice, party });
 
             } catch (e: any) {
@@ -169,7 +162,7 @@ const InvoicePrintView = () => {
         return (
            <div className="flex flex-col items-center justify-center h-screen text-center bg-gray-100 dark:bg-gray-900">
                <p className="text-xl font-semibold text-red-600">{error || 'Invoice not found'}</p>
-               <p className="text-gray-500">The requested invoice could not be located.</p>
+               <p className="text-gray-500">The requested invoice could not be located. This can happen if the link is incorrect or the invoice has been deleted.</p>
            </div>
        );
    }
@@ -196,16 +189,17 @@ const InvoiceDashboardView = () => {
         if (!user || !firestore || !invoiceId) return null;
         return doc(firestore, `users/${user.uid}/invoices`, invoiceId);
     }, [user, firestore, invoiceId]);
-    const { data: invoice, isLoading: isLoadingInvoice } = useDoc<Invoice>(invoiceRef);
+    const { data: invoice, isLoading: isLoadingInvoice, error: invoiceError } = useDoc<Invoice>(invoiceRef);
 
     const partyId = invoice?.partyId;
     const partyRef = useMemoFirebase(() => {
         if (!user || !firestore || !partyId) return null;
         return doc(firestore, `users/${user.uid}/parties`, partyId);
     }, [user, firestore, partyId]);
-    const { data: party, isLoading: isLoadingParty } = useDoc<Party>(partyRef);
+    const { data: party, isLoading: isLoadingParty, error: partyError } = useDoc<Party>(partyRef);
     
     const isLoading = isLoadingInvoice || (!!invoice && !party && isLoadingParty);
+    const error = invoiceError || partyError;
     
     const handleShare = () => {
         if (!party || !party.mobile) {
@@ -265,6 +259,16 @@ This invoice is generated by Aravalli Furniture app.`;
         );
     }
     
+    if (error) {
+        return (
+           <div className="flex flex-col items-center justify-center h-screen text-center bg-gray-100 dark:bg-gray-900">
+               <p className="text-xl font-semibold text-red-600">Error</p>
+               <p className="text-gray-500 max-w-md">{error.message}</p>
+               <Button onClick={() => router.back()} className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground">Go Back</Button>
+           </div>
+       );
+    }
+    
     if (!invoice) {
         return (
            <div className="flex flex-col items-center justify-center h-screen text-center bg-gray-100 dark:bg-gray-900">
@@ -292,11 +296,11 @@ This invoice is generated by Aravalli Furniture app.`;
                 </Button>
                 <h1 className="text-lg font-bold text-gray-800 dark:text-gray-200">Invoice Preview</h1>
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" onClick={handleShare}>
-                        <Share />
+                    <Button variant="outline" size="sm" onClick={handleShare}>
+                        <Share className="mr-2 h-4 w-4" /> Share
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={handlePrint}>
-                        <Printer />
+                    <Button variant="secondary" size="sm" onClick={handlePrint}>
+                        <Printer className="mr-2 h-4 w-4" /> Print
                     </Button>
                 </div>
             </header>
@@ -313,6 +317,9 @@ export default function InvoicePrintPage() {
     const searchParams = useSearchParams();
     const isPrintView = searchParams.get('print') === 'true';
 
+    // The logic to decide which view to render is now split.
+    // The Dashboard view is for logged-in users.
+    // The Print view is for shared links and uses a server action.
     if (isPrintView) {
         return <InvoicePrintView />;
     }

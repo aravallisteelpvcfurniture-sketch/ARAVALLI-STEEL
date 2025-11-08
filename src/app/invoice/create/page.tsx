@@ -121,14 +121,14 @@ export default function CreateInvoicePage() {
 
         try {
             const invoicesColRef = collection(firestore, `users/${user.uid}/invoices`);
-            addDocumentNonBlocking(invoicesColRef, invoiceData);
+            const docRef = await addDocumentNonBlocking(invoicesColRef, invoiceData);
             
             toast({
                 title: 'Invoice Saved',
                 description: 'The invoice has been saved successfully.',
             });
 
-            router.push('/invoice');
+            router.push(`/invoice/${docRef.id}`);
         } catch (error) {
             console.error("Error saving invoice: ", error);
             toast({

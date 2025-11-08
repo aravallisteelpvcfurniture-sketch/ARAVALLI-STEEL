@@ -57,7 +57,8 @@ const InvoiceContent = ({ invoice, party }: { invoice: Invoice, party: Party }) 
                     <thead >
                         <tr className="bg-primary text-primary-foreground uppercase text-sm">
                             <th className="p-3">Description</th>
-                            <th className="p-3 text-right w-24">Qty</th>
+                            <th className="p-3 text-center w-24">Qty</th>
+                            <th className="p-3 text-center w-24">Per Kg</th>
                             <th className="p-3 text-right w-32">Unit Price</th>
                             <th className="p-3 text-right w-32">Total</th>
                         </tr>
@@ -68,7 +69,8 @@ const InvoiceContent = ({ invoice, party }: { invoice: Invoice, party: Party }) 
                                 <td className="p-3">
                                     <p className="font-medium text-gray-800">{item.product}</p>
                                 </td>
-                                <td className="p-3 text-right">{item.qty}</td>
+                                <td className="p-3 text-center">{item.qty}</td>
+                                <td className="p-3 text-center">{item.perKg > 0 ? item.perKg : '-'}</td>
                                 <td className="p-3 text-right">₹{item.rate.toFixed(2)}</td>
                                 <td className="p-3 text-right font-medium">₹{item.total.toFixed(2)}</td>
                             </tr>
