@@ -2,7 +2,7 @@
 
 import { getMaterialSizeRecommendation, MaterialSizeRecommendationInput, MaterialSizeRecommendationOutput } from "@/ai/flows/material-size-recommendation";
 import { z } from 'zod';
-import { getFirestore, doc, collection, where, query, getDocs, writeBatch, getDoc } from 'firebase-admin/firestore';
+import { getFirestore, doc, collection, where, query, getDocs, writeBatch, getDoc, deleteDoc } from 'firebase-admin/firestore';
 import { initializeAdminApp } from "@/firebase/admin";
 import type { Invoice, Party } from "@/models/types";
 
@@ -78,35 +78,8 @@ export async function deletePartyAndInvoices(userId: string, partyId: string) {
 }
 
 export async function getInvoiceForSharing(userId: string, invoiceId: string): Promise<{ invoice: Invoice | null; party: Party | null; error?: string }> {
-    if (!userId || !invoiceId) {
-        return { invoice: null, party: null, error: 'Invalid parameters.' };
-    }
-
-    try {
-        const { firestore } = await initializeAdminApp();
-
-        // Fetch invoice
-        const invoiceRef = doc(firestore, `users/${userId}/invoices/${invoiceId}`);
-        const invoiceSnap = await getDoc(invoiceRef);
-
-        if (!invoiceSnap.exists()) {
-            return { invoice: null, party: null, error: 'Invoice not found.' };
-        }
-        const invoice = { id: invoiceSnap.id, ...invoiceSnap.data() } as Invoice;
-
-        // Fetch party
-        const partyRef = doc(firestore, `users/${userId}/parties/${invoice.partyId}`);
-        const partySnap = await getDoc(partyRef);
-
-        if (!partySnap.exists()) {
-            return { invoice: invoice, party: null, error: 'Party not found.' };
-        }
-        const party = { id: partySnap.id, ...partySnap.data() } as Party;
-
-        return { invoice, party };
-
-    } catch (error) {
-        console.error("Error fetching invoice for sharing:", error);
-        return { invoice: null, party: null, error: 'Could not fetch invoice data.' };
-    }
+     // This function is no longer using firebase-admin and will be handled client-side
+     // with updated security rules. This function body can be removed or left as is.
+     // For safety, returning an error to indicate it should not be used.
+     return { invoice: null, party: null, error: "This server action is deprecated." };
 }

@@ -1,13 +1,12 @@
 'use client';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase, initializeFirebase } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import type { Invoice, Party } from '@/models/types';
 import { Loader, ArrowLeft, Printer, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { getInvoiceForSharing } from '@/app/actions';
 
 const InvoiceContent = ({ invoice, party }: { invoice: Invoice, party: Party }) => {
     const subTotal = invoice.items.reduce((acc, item) => acc + item.total, 0);
@@ -121,15 +120,31 @@ const InvoicePrintView = () => {
 
         const fetchData = async () => {
             setIsLoading(true);
-            const result = await getInvoiceForSharing(userId, invoiceId);
-            if (result.error) {
-                setError(result.error);
-            } else if (result.invoice && result.party) {
-                setData({ invoice: result.invoice, party: result.party });
-            } else {
-                 setError("Could not retrieve invoice details.");
+            try {
+                const { firestore } = initializeFirebase();
+                const invoiceRef = doc(firestore, `users/${userId}/invoices`, invoiceId);
+                const invoiceSnap = await getDoc(invoiceRef);
+
+                if (!invoiceSnap.exists()) {
+                    throw new Error("Invoice not found.");
+                }
+                const invoice = { id: invoiceSnap.id, ...invoiceSnap.data() } as Invoice;
+
+                const partyRef = doc(firestore, `users/${userId}/parties`, invoice.partyId);
+                const partySnap = await getDoc(partyRef);
+
+                if (!partySnap.exists()) {
+                    throw new Error("Party not found.");
+                }
+                const party = { id: partySnap.id, ...partySnap.data() } as Party;
+                
+                setData({ invoice, party });
+
+            } catch (e: any) {
+                 setError(e.message || "Could not retrieve invoice details.");
+            } finally {
+                setIsLoading(false);
             }
-            setIsLoading(false);
         };
         fetchData();
     }, [userId, invoiceId]);
