@@ -9,11 +9,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ArrowLeft, Loader, FileText, Share, Printer, Plus } from 'lucide-react';
 import BottomNavbar from '@/components/bottom-navbar';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 export default function PartyDetailsPage() {
     const router = useRouter();
     const params = useParams();
     const partyId = params.partyId as string;
+    const { toast } = useToast();
 
     const { user } = useUser();
     const firestore = useFirestore();
@@ -33,25 +35,36 @@ export default function PartyDetailsPage() {
 
     const isLoading = isLoadingParty || isLoadingInvoices;
     
-    const handleShare = (invoiceId: string) => {
-        // Placeholder for share functionality
-        console.log(`Sharing PDF for invoice ${invoiceId}`);
+    const copyLinkFallback = (url: string) => {
+        navigator.clipboard.writeText(url);
+        toast({
+            title: "Link Copied",
+            description: "Share link copied to clipboard!",
+        });
+    };
+
+    const handleShare = async (invoiceId: string) => {
         const url = `${window.location.origin}/invoice/${invoiceId}?print=true`;
-        if(navigator.share) {
-            navigator.share({
-                title: `Invoice ${invoiceId}`,
-                text: `View the invoice for ${party?.name}`,
-                url: url
-            })
+        const shareData = {
+            title: `Invoice ${invoiceId.substring(0,6)}`,
+            text: `View the invoice for ${party?.name}`,
+            url: url
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.error("Share failed:", err);
+                // Fallback to copying the link if user cancels or there's an error
+                copyLinkFallback(url);
+            }
         } else {
-            navigator.clipboard.writeText(url);
-            alert('Share link copied to clipboard!');
+            copyLinkFallback(url);
         }
     }
 
     const handlePrint = (invoiceId: string) => {
-        // Placeholder for print functionality
-        console.log(`Printing PDF for invoice ${invoiceId}`);
         const url = `${window.location.origin}/invoice/${invoiceId}?print=true`;
         window.open(url, '_blank');
     }
