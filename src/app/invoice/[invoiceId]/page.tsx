@@ -30,11 +30,8 @@ export default function InvoicePrintPage() {
     }, [user, firestore, invoice]);
     const { data: party, isLoading: isLoadingParty } = useDoc<Party>(partyRef);
     
-    useEffect(() => {
-        if (isPrintView && !isLoadingInvoice && !isLoadingParty && invoice && party) {
-            setTimeout(() => window.print(), 500);
-        }
-    }, [isPrintView, isLoadingInvoice, isLoadingParty, invoice, party]);
+    // The automatic print dialog was removed to allow users to view the layout first.
+    // The user can manually trigger the print function from the button or browser menu.
 
     const isLoading = isLoadingInvoice || isLoadingParty;
 
@@ -56,16 +53,14 @@ export default function InvoicePrintPage() {
    }
 
     return (
-        <div className={`bg-white text-black min-h-screen ${isPrintView ? '' : 'p-4 md:p-8'}`}>
-             {!isPrintView && (
-                <header className="print:hidden flex items-center justify-between p-4 border-b bg-card shadow-sm mb-4">
-                    <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                        <ArrowLeft />
-                    </Button>
-                    <h1 className="text-xl font-headline text-primary">Invoice</h1>
-                    <Button onClick={() => window.print()}>Print</Button>
-                </header>
-             )}
+        <div className={`bg-white text-black min-h-screen ${isPrintView ? 'p-4 md:p-8' : 'p-4 md:p-8'}`}>
+            <header className="print:hidden flex items-center justify-between p-4 border-b bg-card shadow-sm mb-4 max-w-4xl mx-auto rounded-t-lg">
+                <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                    <ArrowLeft />
+                </Button>
+                <h1 className="text-xl font-headline text-primary">Invoice</h1>
+                <Button onClick={() => window.print()}>Print</Button>
+            </header>
             <div className="max-w-4xl mx-auto p-8 border rounded-lg bg-white shadow-lg print:shadow-none print:border-none print:p-0">
                 <header className="text-center mb-8 pb-4 border-b">
                     <h1 className="text-4xl font-bold text-gray-800 font-headline">Aravalli Furniture</h1>
@@ -122,7 +117,7 @@ export default function InvoicePrintPage() {
                     </div>
                 </div>
 
-                <footer className="text-center text-sm text-gray-500 pt-4 border-t mt-8">
+                <footer className="text-center text-sm text-gray-500 pt-4 border-t mt-8 print:mt-4">
                     <p>Thank you for your business!</p>
                 </footer>
             </div>
