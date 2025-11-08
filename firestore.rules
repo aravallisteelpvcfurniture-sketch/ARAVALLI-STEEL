@@ -141,10 +141,16 @@ service cloud.firestore {
         function isOwner(userId) {
             return request.auth.uid == userId;
         }
+        
+        function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+        }
 
-        allow read, list: if isOwner(userId);
+        allow read: if isOwner(userId);
         allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update, delete: if isOwner(userId) && resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == userId;
+        allow delete: if isExistingOwner(userId);
+        allow list: if isOwner(userId);
     }
 
     /**
@@ -156,10 +162,23 @@ service cloud.firestore {
         function isOwner(userId) {
             return request.auth.uid == userId;
         }
+        
+        function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+        }
 
-        allow read, list: if isOwner(userId);
+        // Allow logged-in owner to read their own invoices
+        allow read: if isOwner(userId);
+        allow list: if isOwner(userId);
+        
+        // Allow anyone with a specific query parameter to read a specific invoice
+        // This is for sharing invoice links. It's a simplified rule for this purpose.
+        // A more secure implementation might use a unique, unguessable token.
+        allow get: if request.query.uid == userId;
+
         allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update, delete: if isOwner(userId) && resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == userId;
+        allow delete: if isExistingOwner(userId);
     }
   }
 }

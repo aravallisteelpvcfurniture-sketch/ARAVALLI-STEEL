@@ -8,7 +8,7 @@ import { Plus, User, ArrowLeft, Loader, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { collection, doc, writeBatch, query, where, getDocs } from 'firebase/firestore';
 import type { Party } from '@/models/types';
 import {
   AlertDialog,
@@ -21,8 +21,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useToast } from '@/hooks/use-toast';
-import { deletePartyAndInvoices } from '@/app/actions';
-
 
 const WhatsAppIcon = () => (
     <svg
@@ -74,26 +72,44 @@ export default function InvoicePage() {
     };
     
     const confirmDelete = async () => {
-        if (!partyToDelete || !user) return;
+        if (!partyToDelete || !user || !firestore) return;
         setIsDeleting(true);
-
-        const result = await deletePartyAndInvoices(user.uid, partyToDelete.id);
-
-        if (result.success) {
+    
+        try {
+            const batch = writeBatch(firestore);
+    
+            // 1. Find all invoices for the party
+            const invoicesRef = collection(firestore, `users/${user.uid}/invoices`);
+            const invoicesQuery = query(invoicesRef, where('partyId', '==', partyToDelete.id));
+            const invoicesSnapshot = await getDocs(invoicesQuery);
+    
+            // 2. Add invoice deletions to the batch
+            invoicesSnapshot.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+    
+            // 3. Add party deletion to the batch
+            const partyRef = doc(firestore, `users/${user.uid}/parties`, partyToDelete.id);
+            batch.delete(partyRef);
+    
+            // 4. Commit the batch
+            await batch.commit();
+    
             toast({
                 title: 'Party Deleted',
                 description: `${partyToDelete.name} and all their invoices have been deleted.`,
             });
-        } else {
+        } catch (error) {
+            console.error('Error deleting party and invoices:', error);
             toast({
                 variant: 'destructive',
                 title: 'Delete Failed',
-                description: result.error || 'Could not delete the party. Please try again.',
+                description: 'Could not delete the party and its invoices. Please try again.',
             });
+        } finally {
+            setIsDeleting(false);
+            setPartyToDelete(null);
         }
-
-        setIsDeleting(false);
-        setPartyToDelete(null);
     };
 
 
