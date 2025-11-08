@@ -124,13 +124,6 @@ export default function InvoicePrintPage() {
     
     const isLoading = isLoadingInvoice || (!!invoice && !party && isLoadingParty);
 
-    useEffect(() => {
-        if (isPrintView && !isLoading && invoice && party) {
-            // The content is ready, no need to trigger print automatically.
-            // The user can use the browser's print function if they wish.
-        }
-    }, [isPrintView, isLoading, invoice, party]);
-
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
