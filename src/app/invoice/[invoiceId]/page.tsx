@@ -3,7 +3,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { Invoice, Party } from '@/models/types';
-import { Loader, ArrowLeft, Printer, Share } from 'lucide-react';
+import { Loader, ArrowLeft, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
 
@@ -21,16 +21,16 @@ const InvoiceContent = ({ invoice, party }: { invoice: Invoice, party: Party }) 
             {/* Header */}
             <header className="flex justify-between items-start pb-8 border-b-4 border-primary">
                 <div>
+                    <h2 className="text-2xl font-bold text-gray-800 uppercase">ARAVALLI</h2>
+                    <p className="text-sm text-gray-500 mt-1">123 Industrial Area, Kishangarh, Rajasthan</p>
+                    <p className="text-sm text-gray-500">email@aravalli.com | (123) 456-7890</p>
+                </div>
+                <div className="text-right">
                     <h1 className="text-4xl font-bold text-primary uppercase tracking-wider">INVOICE</h1>
                     <div className="mt-4 text-sm text-gray-600">
                         <p><strong>Invoice No:</strong> #{invoice.id.substring(0, 6).toUpperCase()}</p>
                         <p><strong>Invoice Date:</strong> {new Date(invoice.createdAt).toLocaleDateString('en-GB')}</p>
                     </div>
-                </div>
-                <div className="text-right">
-                    <h2 className="text-2xl font-bold text-gray-800 uppercase">ARAVALLI</h2>
-                    <p className="text-sm text-gray-500 mt-1">123 Industrial Area, Kishangarh, Rajasthan</p>
-                    <p className="text-sm text-gray-500">email@aravalli.com | (123) 456-7890</p>
                 </div>
             </header>
 
@@ -116,13 +116,25 @@ export default function InvoicePrintPage() {
     }, [user, firestore, invoiceId]);
     const { data: invoice, isLoading: isLoadingInvoice } = useDoc<Invoice>(invoiceRef);
 
+    const partyId = invoice?.partyId;
     const partyRef = useMemoFirebase(() => {
-        if (!user || !firestore || !invoice?.partyId) return null;
-        return doc(firestore, `users/${user.uid}/parties`, invoice.partyId);
-    }, [user, firestore, invoice?.partyId]);
+        if (!user || !firestore || !partyId) return null;
+        return doc(firestore, `users/${user.uid}/parties`, partyId);
+    }, [user, firestore, partyId]);
     const { data: party, isLoading: isLoadingParty } = useDoc<Party>(partyRef);
     
     const isLoading = isLoadingInvoice || (!!invoice && !party && isLoadingParty);
+
+    useEffect(() => {
+        if (isPrintView && !isLoading && invoice && party) {
+            setTimeout(() => window.print(), 1000); // Delay to ensure content is rendered
+        }
+    }, [isPrintView, isLoading, invoice, party]);
+
+    const handlePrint = () => {
+        const url = `/invoice/${invoiceId}?print=true`;
+        window.open(url, '_blank');
+    }
 
     if (isLoading) {
         return (
@@ -168,7 +180,7 @@ export default function InvoicePrintPage() {
                 </Button>
                 <h1 className="text-lg font-bold text-gray-800 dark:text-gray-200">Invoice Preview</h1>
                 <div>
-                     <Button variant="outline" onClick={() => window.print()} className="text-primary-foreground">
+                     <Button variant="outline" onClick={handlePrint} className="text-primary-foreground">
                         <Printer className="mr-2 h-4 w-4"/>
                         Print
                     </Button>
