@@ -8,7 +8,7 @@ import { Plus, User, ArrowLeft, Loader, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, doc } from 'firebase/firestore';
 import type { Party } from '@/models/types';
 import {
   AlertDialog,
