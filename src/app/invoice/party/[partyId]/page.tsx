@@ -55,8 +55,8 @@ export default function PartyDetailsPage() {
             try {
                 await navigator.share(shareData);
             } catch (err) {
-                console.error("Share failed:", err);
-                // Fallback to copying the link if user cancels or there's an error
+                // Fallback to copying the link if user cancels or there's an error.
+                // We don't log the error to avoid showing the Next.js error overlay.
                 copyLinkFallback(url);
             }
         } else {
