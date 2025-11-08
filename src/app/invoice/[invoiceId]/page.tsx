@@ -29,7 +29,7 @@ export default function InvoicePrintPage() {
     }, [user, firestore, invoice]);
     const { data: party, isLoading: isLoadingParty } = useDoc<Party>(partyRef);
     
-    const isLoading = isLoadingInvoice || isLoadingParty;
+    const isLoading = isLoadingInvoice || (invoice && isLoadingParty);
 
     if (isLoading) {
         return (
@@ -154,3 +154,4 @@ export default function InvoicePrintPage() {
             </div>
         </div>
     );
+    
