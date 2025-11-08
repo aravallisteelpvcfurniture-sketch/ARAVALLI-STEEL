@@ -35,33 +35,31 @@ export default function PartyDetailsPage() {
 
     const isLoading = isLoadingParty || isLoadingInvoices;
     
-    const copyLinkFallback = (url: string) => {
-        navigator.clipboard.writeText(url);
-        toast({
-            title: "Link Copied",
-            description: "Share link copied to clipboard!",
-        });
-    };
-
-    const handleShare = async (invoiceId: string) => {
-        const url = `${window.location.origin}/invoice/${invoiceId}?print=true`;
-        const shareData = {
-            title: `Invoice from Aravalli Furniture`,
-            text: `Hi ${party?.name || ''}, please find your invoice here. Click the link to view and download the PDF.`,
-            url: url
-        };
-
-        if (navigator.share) {
-            try {
-                await navigator.share(shareData);
-            } catch (err) {
-                // Fallback to copying the link if user cancels or there's an error.
-                // We don't log the error to avoid showing the Next.js error overlay.
-                copyLinkFallback(url);
-            }
-        } else {
-            copyLinkFallback(url);
+    const handleShare = (invoiceId: string) => {
+        if (!party || !party.mobile) {
+            toast({
+                variant: 'destructive',
+                title: "Mobile Number Missing",
+                description: "This party does not have a mobile number to share to.",
+            });
+            return;
         }
+
+        const invoiceUrl = `${window.location.origin}/invoice/${invoiceId}?print=true`;
+        const message = `Hi ${party.name}, please find your invoice here. Click the link to view and download the PDF.\n\n${invoiceUrl}`;
+        
+        // Basic cleanup: remove non-numeric characters except '+'
+        const cleanedMobile = party.mobile.replace(/[^0-9+]/g, '');
+        let whatsappUrl = `https://wa.me/${cleanedMobile}`;
+        
+        // If number doesn't start with a country code, assume it's an Indian number
+        if (!cleanedMobile.startsWith('+') && cleanedMobile.length >= 10) {
+            whatsappUrl = `https://wa.me/91${cleanedMobile.slice(-10)}`;
+        }
+        
+        whatsappUrl += `?text=${encodeURIComponent(message)}`;
+
+        window.open(whatsappUrl, '_blank');
     }
 
     const handlePrint = (invoiceId: string) => {
