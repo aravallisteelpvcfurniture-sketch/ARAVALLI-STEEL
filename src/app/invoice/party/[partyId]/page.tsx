@@ -46,8 +46,8 @@ export default function PartyDetailsPage() {
     const handleShare = async (invoiceId: string) => {
         const url = `${window.location.origin}/invoice/${invoiceId}?print=true`;
         const shareData = {
-            title: `Invoice ${invoiceId.substring(0,6)}`,
-            text: `View the invoice for ${party?.name}`,
+            title: `Invoice from Aravalli Furniture`,
+            text: `Hi ${party?.name || ''}, please find your invoice here. Click the link to view and download the PDF.`,
             url: url
         };
 
