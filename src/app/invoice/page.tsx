@@ -1,15 +1,28 @@
 'use client';
 
-import Header from '@/components/header';
+import { useState } from 'react';
 import BottomNavbar from '@/components/bottom-navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, User, ArrowLeft, Loader } from 'lucide-react';
+import { Plus, User, ArrowLeft, Loader, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query } from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
 import type { Party } from '@/models/types';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { useToast } from '@/hooks/use-toast';
+import { deletePartyAndInvoices } from '@/app/actions';
+
 
 const WhatsAppIcon = () => (
     <svg
@@ -33,6 +46,10 @@ export default function InvoicePage() {
     const router = useRouter();
     const { user } = useUser();
     const firestore = useFirestore();
+    const { toast } = useToast();
+
+    const [partyToDelete, setPartyToDelete] = useState<Party | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const partiesRef = useMemoFirebase(() => {
         if (!user || !firestore) return null;
@@ -43,15 +60,42 @@ export default function InvoicePage() {
 
     const handleWhatsAppClick = (e: React.MouseEvent, mobile: string) => {
         e.stopPropagation(); // Prevents the card's click event
-        // Basic cleanup: remove non-numeric characters except '+'
         const cleanedMobile = mobile.replace(/[^0-9+]/g, '');
         let whatsappUrl = `https://wa.me/${cleanedMobile}`;
-        // If number doesn't start with a country code, assume it's an Indian number
         if (!cleanedMobile.startsWith('+') && cleanedMobile.length >= 10) {
             whatsappUrl = `https://wa.me/91${cleanedMobile.slice(-10)}`;
         }
         window.open(whatsappUrl, '_blank');
     };
+
+    const handleDeleteClick = (e: React.MouseEvent, party: Party) => {
+        e.stopPropagation();
+        setPartyToDelete(party);
+    };
+    
+    const confirmDelete = async () => {
+        if (!partyToDelete || !user) return;
+        setIsDeleting(true);
+
+        const result = await deletePartyAndInvoices(user.uid, partyToDelete.id);
+
+        if (result.success) {
+            toast({
+                title: 'Party Deleted',
+                description: `${partyToDelete.name} and all their invoices have been deleted.`,
+            });
+        } else {
+            toast({
+                variant: 'destructive',
+                title: 'Delete Failed',
+                description: result.error || 'Could not delete the party. Please try again.',
+            });
+        }
+
+        setIsDeleting(false);
+        setPartyToDelete(null);
+    };
+
 
   return (
     <div className="flex flex-col h-screen">
@@ -89,8 +133,8 @@ export default function InvoicePage() {
             </div>
           ) : (
             parties?.map((party) => (
-              <Card key={party.id} className="hover:bg-secondary/50 transition-colors" onClick={() => router.push(`/invoice/party/${party.id}`)}>
-                <CardContent className="p-4 flex items-center gap-4">
+              <Card key={party.id} className="hover:bg-secondary/50 transition-colors group">
+                <CardContent className="p-4 flex items-center gap-4" onClick={() => router.push(`/invoice/party/${party.id}`)}>
                   <div className="p-3 bg-secondary rounded-full">
                     <User className="h-6 w-6 text-secondary-foreground" />
                   </div>
@@ -101,6 +145,9 @@ export default function InvoicePage() {
                   <div onClick={(e) => handleWhatsAppClick(e, party.mobile)} className="p-2 rounded-full hover:bg-green-100 cursor-pointer">
                     <WhatsAppIcon />
                   </div>
+                   <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" onClick={(e) => handleDeleteClick(e, party)}>
+                    <Trash2 className="h-5 w-5"/>
+                  </Button>
                 </CardContent>
               </Card>
             ))
@@ -108,6 +155,28 @@ export default function InvoicePage() {
         </div>
       </main>
       <BottomNavbar />
+
+      <AlertDialog open={!!partyToDelete} onOpenChange={(isOpen) => !isOpen && setPartyToDelete(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the party <span className="font-bold">{partyToDelete?.name}</span> and all of their associated invoices.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                className="bg-destructive hover:bg-destructive/90"
+            >
+                {isDeleting ? <Loader className="animate-spin mr-2" /> : null}
+                Yes, delete
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
