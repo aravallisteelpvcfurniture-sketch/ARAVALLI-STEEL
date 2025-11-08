@@ -11,7 +11,7 @@ const serviceAccount = process.env.FIREBASE_ADMIN_SERVICE_ACCOUNT
   ? JSON.parse(process.env.FIREBASE_ADMIN_SERVICE_ACCOUNT)
   : undefined;
 
-function getAdminApp(): App {
+async function getAdminApp(): Promise<App> {
     if (getApps().length > 0) {
         return getApps()[0];
     }
@@ -25,8 +25,8 @@ function getAdminApp(): App {
     });
 }
 
-export function initializeAdminApp() {
-    const app = getAdminApp();
+export async function initializeAdminApp() {
+    const app = await getAdminApp();
     return {
         auth: getAuth(app),
         firestore: getFirestore(app),

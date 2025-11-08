@@ -49,7 +49,7 @@ export async function deletePartyAndInvoices(userId: string, partyId: string) {
     }
     
     try {
-        const { firestore } = initializeAdminApp();
+        const { firestore } = await initializeAdminApp();
         
         const batch = writeBatch(firestore);
         
