@@ -1,4 +1,5 @@
 
+
 export interface Party {
     id: string;
     userId: string;
@@ -13,6 +14,7 @@ export interface InvoiceItem {
     product: string;
     qty: number;
     rate: number;
+    perKg: number;
     total: number;
 }
 
