@@ -26,10 +26,10 @@ export default function InvoicePrintPage() {
     const partyRef = useMemoFirebase(() => {
         if (!user || !firestore || !invoice?.partyId) return null;
         return doc(firestore, `users/${user.uid}/parties`, invoice.partyId);
-    }, [user, firestore, invoice]);
+    }, [user, firestore, invoice?.partyId]);
     const { data: party, isLoading: isLoadingParty } = useDoc<Party>(partyRef);
     
-    const isLoading = isLoadingInvoice || (invoice && isLoadingParty);
+    const isLoading = isLoadingInvoice || (!invoice ? false : isLoadingParty);
 
     if (isLoading) {
         return (
@@ -42,7 +42,7 @@ export default function InvoicePrintPage() {
     if (!invoice || !party) {
         return (
            <div className="flex flex-col items-center justify-center h-screen text-center bg-gray-100 dark:bg-gray-900">
-               <p className="text-xl font-semibold text-red-600">Invoice not found</p>
+               <p className="text-xl font-semibold text-red-600">Invoice or Party not found</p>
                <Button onClick={() => router.back()} className="mt-4 bg-blue-600 hover:bg-blue-700 text-white">Go Back</Button>
            </div>
        );
@@ -154,4 +154,6 @@ export default function InvoicePrintPage() {
             </div>
         </div>
     );
+}
+
     
