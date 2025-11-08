@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,9 +9,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ArrowLeft, PlusCircle, Trash2, Loader } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import BottomNavbar from '@/components/bottom-navbar';
-import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { Party } from '@/models/types';
+import Link from 'next/link';
+
 
 interface Item {
   id: number;
@@ -25,18 +29,26 @@ interface Item {
 export default function CreateInvoicePage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const partyId = searchParams.get('partyId');
+    const initialPartyId = searchParams.get('partyId');
     
     const { user } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
 
+    const [partyId, setPartyId] = useState<string | null>(initialPartyId);
     const [items, setItems] = useState<Item[]>([]);
     const [product, setProduct] = useState('');
     const [qty, setQty] = useState<number | ''>('');
     const [rate, setRate] = useState<number | ''>('');
     const [perKg, setPerKg] = useState<number | ''>('');
     const [isLoading, setIsLoading] = useState(false);
+
+    const partiesRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return collection(firestore, `users/${user.uid}/parties`);
+    }, [user, firestore]);
+    const { data: parties } = useCollection<Party>(partiesRef);
+
 
     const handleAddItem = () => {
         if (!product || !qty || qty <= 0 || !rate || rate <= 0) {
@@ -84,7 +96,7 @@ export default function CreateInvoicePage() {
             toast({
                 variant: 'destructive',
                 title: 'Error',
-                description: 'Cannot save bill. User or party not found.',
+                description: 'Please select a party to save the bill.',
             });
             return;
         }
@@ -139,6 +151,28 @@ export default function CreateInvoicePage() {
             </header>
             <main className="flex-1 p-4 overflow-y-auto">
                 <div className="space-y-6">
+                    {/* Party Selection */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Select Party</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                             <Select onValueChange={setPartyId} defaultValue={partyId || undefined}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a party" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {parties?.map(p => (
+                                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <p className="text-sm text-muted-foreground mt-2">
+                                Can't find a party? <Link href="/invoice/add-party" className="text-primary underline">Add a new one</Link>.
+                            </p>
+                        </CardContent>
+                    </Card>
+
                     {/* Add Item Form */}
                     <Card>
                         <CardHeader>

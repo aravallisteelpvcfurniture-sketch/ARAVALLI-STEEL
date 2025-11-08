@@ -60,12 +60,20 @@ export default function InvoicePage() {
             <ArrowLeft />
         </Button>
         <h1 className="text-xl font-headline text-primary">Party List</h1>
-        <Link href="/invoice/add-party">
-          <Button variant="outline" size="sm">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Party
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+            <Link href="/invoice/add-party">
+            <Button variant="outline" size="sm">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Party
+            </Button>
+            </Link>
+            <Link href="/invoice/create">
+                <Button size="sm">
+                    <Plus className="mr-2 h-4 w-4" />
+                    New Bill
+                </Button>
+            </Link>
+        </div>
       </header>
       <main className="flex-1 p-4 overflow-y-auto">
         <div className="space-y-4">
@@ -81,7 +89,7 @@ export default function InvoicePage() {
             </div>
           ) : (
             parties?.map((party) => (
-              <Card key={party.id} className="hover:bg-secondary/50 transition-colors" onClick={() => router.push(`/invoice/create?partyId=${party.id}`)}>
+              <Card key={party.id} className="hover:bg-secondary/50 transition-colors" onClick={() => router.push(`/invoice/party/${party.id}`)}>
                 <CardContent className="p-4 flex items-center gap-4">
                   <div className="p-3 bg-secondary rounded-full">
                     <User className="h-6 w-6 text-secondary-foreground" />
